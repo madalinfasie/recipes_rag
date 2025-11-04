@@ -10,4 +10,8 @@ wheels/
 .venv/
 venv/
 
+# Project related
+mongo_data/
+qdrant_data/
+postgres/data/
 .env
