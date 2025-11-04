@@ -1,0 +1,68 @@
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./agent-chat-ui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./agent-chat-ui:/app
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ~/.config/gcloud:/root/.config/gcloud
+    depends_on:
+      - qdrant
+
+  feeder:
+    container_name: feeder
+    build:
+      context: ./feeder
+    env_file:
+      - ./feeder/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./feeder/dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+
+
+  postgres:
+    image: postgres:15
+    env_file:
+      - postgres/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  qdrant:
+    image: qdrant/qdrant:v1.15.1
+    container_name: qdrant
+    ports:
+      - 6333:6333
+      - 6334:6334
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 27017:27017
+    volumes:
+      - ./mongo_data:/data/db
+
+volumes:
+  airflow_logs:
+  airflow_data:
+  postgres_data:
